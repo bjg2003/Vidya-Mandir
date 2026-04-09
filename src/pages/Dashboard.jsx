@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Sidebar from '../components/Sidebar'
 import Topbar from '../components/Topbar'
 import DashboardHome from '../components/DashboardHome'
@@ -22,6 +22,26 @@ function Dashboard({ user, onLogout }) {
   const [activePage, setActivePage]   = useState('dashboard')
   const [sidebarOpen, setSidebarOpen] = useState(true)
 
+  // ── Dark mode state ────────────────────────────────────────
+  // Read saved preference from localStorage on first load
+  const [darkMode, setDarkMode] = useState(() => {
+    return localStorage.getItem('school_theme') === 'dark'
+  })
+
+  // Apply / remove dark class on <html> whenever darkMode changes
+  useEffect(() => {
+    const root = document.documentElement
+    if (darkMode) {
+      root.setAttribute('data-theme', 'dark')
+      localStorage.setItem('school_theme', 'dark')
+    } else {
+      root.setAttribute('data-theme', 'light')
+      localStorage.setItem('school_theme', 'light')
+    }
+  }, [darkMode])
+
+  const toggleTheme = () => setDarkMode(prev => !prev)
+
   const renderPage = () => {
     switch (activePage) {
       case 'dashboard': return <DashboardHome onNavigate={setActivePage} />
@@ -41,6 +61,7 @@ function Dashboard({ user, onLogout }) {
         onNavigate={setActivePage}
         onLogout={onLogout}
         isOpen={sidebarOpen}
+        darkMode={darkMode}
       />
       <div className="dashboard-main">
         <Topbar
@@ -48,6 +69,8 @@ function Dashboard({ user, onLogout }) {
           user={user}
           onToggleSidebar={() => setSidebarOpen(o => !o)}
           onAdminClick={() => setActivePage('admin')}
+          darkMode={darkMode}
+          onToggleTheme={toggleTheme}
         />
         <div className="dashboard-content">
           {renderPage()}
